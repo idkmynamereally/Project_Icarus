@@ -20,7 +20,6 @@ public class VideoData
         this.views = views;
         this.commentCount = commentCount;
     }
-
     @Override
     public String toString() {
         return "Video Title : " + videoTitle +"\nChannel Title : " + channelTitle + "\nLikes : " + likes + "\nViews : " + views + "\nComment Count : " + commentCount + "\nDate : " + uploadDate;

@@ -15,7 +15,7 @@ import java.util.List;
 public class YouTubeApiClient {
     public static List<VideoData> getSearchData(String query) throws IOException, URISyntaxException
     {      //List of videoIds
-        int numOfVideos = 20;
+        int numOfVideos = 35;
         String order = "relevance";     //Other : date, rating, relevance, title, videoCount, viewCount
         List<VideoData> l = new ArrayList<>(numOfVideos); //List of VideoData Objects
         JSONArray videoArr = (new JSONObject(getJsonResponseSearchData(query, order, numOfVideos))).getJSONArray("items");     //JSON Array of Video Data that are found by query.
@@ -57,7 +57,7 @@ public class YouTubeApiClient {
     }
     public static List<Comment> getCommentsData(String videoId) throws IOException, URISyntaxException
     {
-        int numOfComments = 20;
+        int numOfComments = 30;
         ArrayList<Comment> comments = new ArrayList<>(numOfComments);
         JSONArray apiResponseArray = (new JSONObject(getJsonResponseCommentsData(videoId, numOfComments))).getJSONArray("items");
         JSONObject topLevelCommentSnippet;
@@ -68,7 +68,7 @@ public class YouTubeApiClient {
         for (int i = 0; i < numOfComments; i++)
         {
             topLevelCommentSnippet = apiResponseArray.getJSONObject(i).getJSONObject("snippet").getJSONObject("topLevelComment").getJSONObject("snippet");
-            comment = topLevelCommentSnippet.getString("textDisplay");
+            comment = topLevelCommentSnippet.getString("textOriginal");
             authorName = topLevelCommentSnippet.getString("authorDisplayName");
             likes = topLevelCommentSnippet.getInt("likeCount");
             com = new Comment(comment, authorName, likes);
