@@ -1,0 +1,3 @@
+Comments - https://www.googleapis.com/youtube/v3/commentThreads?videoId=pJtlLzsDICo&key=AIzaSyCG9m-cT3ugYXbx_TsPkJNfEnFH1GaaOvM&part=snippet&maxResults=50&order=relevance
+
+Video - https://www.googleapis.com/youtube/v3/videos?id=pJtlLzsDICo&key=AIzaSyCG9m-cT3ugYXbx_TsPkJNfEnFH1GaaOvM&part=statistics,snippet&fields=items
