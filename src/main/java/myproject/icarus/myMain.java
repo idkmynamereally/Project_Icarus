@@ -8,27 +8,20 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class myMain
 {
     public static void main(String[] args) throws IOException, URISyntaxException
     {
-        XSSFWorkbook workbook = new XSSFWorkbook();
-        XSSFSheet sheet = ExcelHandler.initExcelSheetForComments(workbook);
-        List<Comment> list = YouTubeApiClient.getCommentsData("YD55wE2k2FQ");
-        for (Comment c : list)
+        System.out.println(ApiUrlCreator.VideoApiFunctionUrl("RD2E4aaIvrU7Q"));
+        List<VideoData> l = YoutubeApiClient.search("Derke");
+        for (VideoData v : l)
         {
-            ExcelHandler.inputCommentToExcelSheet(sheet, c);
+            System.out.println(v);
+            System.out.println();
         }
-        ExcelHandler.createExcelFile(workbook);
-    }
-    public static void writeJsonToFile(String json) throws IOException
-    {
-        File file = new File("D:\\coding\\JavaRep\\ytData.json");
-        file.createNewFile();
-        FileWriter fw = new FileWriter(file);
-        fw.write(json);
-        fw.close();
     }
 }

@@ -13,6 +13,7 @@ class ExcelConstValues
     static String[] videoDataCols = {"VideoTitle", "ChannelTitle", "VideoID", "UploadDate", "Likes", "Views", "CommentCount"};
     static String[] commentCols = {"Comment", "Author Name", "Likes"};
 }
+
 class CellStyleOptions
 {
     public CellStyleOptions(XSSFWorkbook workbook)
@@ -81,13 +82,13 @@ public class ExcelHandler
         XSSFRow row = sheet.createRow(rowNum);
         CellStyle regularCellStyle = new CellStyleOptions(sheet.getWorkbook()).regularCell;
 
-        row.createCell(0).setCellValue(videoData.getVideoTitle());
+/*        row.createCell(0).setCellValue(videoData.getVideoTitle());
         row.createCell(1).setCellValue(videoData.getChannelTitle());
         row.createCell(2).setCellValue(videoData.getId());
         row.createCell(3).setCellValue(videoData.getUploadDate());
         row.createCell(4).setCellValue(videoData.getLikes());
         row.createCell(5).setCellValue(videoData.getViews());
-        row.createCell(6).setCellValue(videoData.getCommentCount());
+        row.createCell(6).setCellValue(videoData.getCommentCount());*/
 
         for (int i = 0; i < 7; i++)
         {
@@ -101,9 +102,9 @@ public class ExcelHandler
         XSSFRow row = sheet.createRow(rowNum);
         CellStyle regularCellStyle = new CellStyleOptions(sheet.getWorkbook()).regularCell;
 
-        row.createCell(0).setCellValue(comment.comment);
+        row.createCell(0).setCellValue(comment.textDisplay);
         row.createCell(1).setCellValue(comment.authorName);
-        row.createCell(2).setCellValue(comment.likes);
+        row.createCell(2).setCellValue(comment.likeCount);
 
         for (int i = 0; i < ExcelConstValues.commentCols.length; i++)
         {
