@@ -1,8 +1,10 @@
 package myproject.icarus;
 
-import java.util.Date;
 import java.util.List;
 
+/**
+ * Class to imitate a YouTube video with its data.
+ */
 public class VideoData
 {
     Channel channel;
@@ -17,6 +19,9 @@ public class VideoData
     int commentCount;
     List<Comment> Comments;
 
+    /**
+     * Initializes the object with invalid values.
+     */
     VideoData()
     {
         videoTitle = "null";
@@ -30,6 +35,11 @@ public class VideoData
         commentCount = -1;
         channel = new Channel();
     }
+
+    /**
+     * Overridden toString to print values to console.
+     * @return String with VideoData values.
+     */
     @Override
     public String toString()
     {

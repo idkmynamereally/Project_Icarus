@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 /**
  * enum for different filterModes.(used in YoutubeApiClient.search)
  */
