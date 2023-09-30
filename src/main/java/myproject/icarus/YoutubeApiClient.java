@@ -1,120 +1,7 @@
 package myproject.icarus;
 
-/*
-public class YouTubeApiClient {
-    public static List<VideoData> getSearchData(String query) throws IOException, URISyntaxException
-    {      //List of videoIds
-        int numOfVideos = 25;
-        String order = "relevance";     //Other : date, rating, relevance, title, videoCount, viewCount
-        List<VideoData> l = new ArrayList<>(numOfVideos); //List of VideoData Objects
-        JSONArray videoArr = (new JSONObject(getJsonResponseSearchData(query, order, numOfVideos))).getJSONArray("items");     //JSON Array of Video Data that are found by query.
-        JSONObject vidObj;
-        String id;
-        for (int i = 0; i < numOfVideos; i++)
-        {
-            vidObj = videoArr.getJSONObject(i);
-            id = vidObj.getJSONObject("id").getString("videoId");
-            l.add(i, getVideoData(id));
-        }
-        return l;
-    }
-    public static VideoData getVideoData(String videoId) throws IOException, URISyntaxException
-    {
-        String videoTitle;
-        String channelTitle;
-        String uploadDate;
-        int likes;
-        int views;
-        int commentCount;
-
-        String json = YouTubeApiClient.getJsonResponseVideoData(videoId);
-        JSONObject jsonResponse = new JSONObject(json);     //Entire Response
-        JSONObject arr0 = new JSONObject(new JSONArray(jsonResponse.get("items").toString()).get(0).toString());   //Zero Index of JSONArray at items
-        JSONObject jsSnippet = arr0.getJSONObject("snippet");   //Snippet part
-
-        videoTitle = jsSnippet.getString("title");
-        channelTitle = jsSnippet.getString("channelTitle");
-        uploadDate = jsSnippet.getString("publishedAt");    //Get Published
-        uploadDate = uploadDate.replace("T", " ");
-
-        JSONObject jsStats = new JSONObject(arr0.get("statistics").toString());
-
-        likes = jsStats.getInt("likeCount");
-        views = jsStats.getInt("viewCount");
-        commentCount = jsStats.getInt("commentCount");
-        return new VideoData(videoTitle, channelTitle, videoId, uploadDate, likes, views, commentCount);
-    }
-    public static List<Comment> getCommentsData(String videoId) throws IOException, URISyntaxException
-    {
-        int numOfComments = 50;
-        ArrayList<Comment> comments = new ArrayList<>(numOfComments);
-        JSONArray apiResponseArray = (new JSONObject(getJsonResponseCommentsData(videoId, numOfComments))).getJSONArray("items");
-        JSONObject topLevelCommentSnippet;
-        Comment com;
-        String comment;
-        String authorName;
-        int likes;
-        for (int i = 0; i < numOfComments; i++)
-        {
-            topLevelCommentSnippet = apiResponseArray.getJSONObject(i).getJSONObject("snippet").getJSONObject("topLevelComment").getJSONObject("snippet");
-            comment = topLevelCommentSnippet.getString("textOriginal");
-            authorName = topLevelCommentSnippet.getString("authorDisplayName");
-            likes = topLevelCommentSnippet.getInt("likeCount");
-            com = new Comment(comment, authorName, likes);
-            comments.add(i, com);
-        }
-        return comments;
-    }
-
-    private static final String API_KEY = "AIzaSyCG9m-cT3ugYXbx_TsPkJNfEnFH1GaaOvM";
-    private static String getJsonResponseSearchData(String query, String order, int numOfVideos) throws IOException, URISyntaxException {
-        String jsonResponseSearchData = sendGetRequest(buildApiUrlSearchData(query, order, numOfVideos));
-        return jsonResponseSearchData;
-    }
-    private static String getJsonResponseVideoData(String videoId) throws IOException, URISyntaxException {
-        String jsonResponseVideoData = sendGetRequest(buildApiUrlVideoData(videoId));
-        return jsonResponseVideoData;
-    }
-    private static String getJsonResponseCommentsData(String videoId, int numOfComments) throws IOException, URISyntaxException {
-        String jsonResponseCommentsData = sendGetRequest(buildApiUrlCommentsData(videoId, numOfComments));
-        return jsonResponseCommentsData;
-    }
-
-    private static String buildApiUrlSearchData(String query, String order, int numOfVideos) {
-        String baseUrl = "https://www.googleapis.com/youtube/v3/search";
-        String parameters = String.format("key=%s&q=%s&order=%s&maxResults=%d&part=snippet&fields=items&type=video", API_KEY, query, order, numOfVideos);
-        return baseUrl + "?" + parameters;
-    }
-    private static String buildApiUrlVideoData(String videoId) {
-        String baseUrl = "https://www.googleapis.com/youtube/v3/videos";
-        String parameters = String.format("id=%s&stat&key=%s&part=snippet,statistics&fields=items", videoId, API_KEY);
-        return baseUrl + "?" + parameters;
-    }
-    private static String buildApiUrlCommentsData(String videoId, int numOfComments) {
-        String baseUrl = "https://www.googleapis.com/youtube/v3/commentThreads";
-        String parameters = String.format("videoId=%s&key=%s&part=snippet&maxResults=%d&order=relevance&fields=items", videoId, API_KEY, numOfComments);
-        return baseUrl + "?" + parameters;
-    }
-
-    private static String sendGetRequest(String url) throws IOException, URISyntaxException {
-        URI u = new URI(url);
-        HttpURLConnection connection = (HttpURLConnection) (u.toURL()).openConnection();
-        connection.setRequestMethod("GET");
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            return response.toString();
-        }
-    }
-}*/
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -126,12 +13,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
+/**
+ * enum for different filterModes.(used in YoutubeApiClient.search)
+ */
+enum filterMode
+{
+    UNIQUE_CHANNELS
+}
+
+/**
+ * Class to contain Constant Values used in the program for easier modifications for later.
+ */
 class ConstValues
 {
     static final String API_KEY = "AIzaSyCG9m-cT3ugYXbx_TsPkJNfEnFH1GaaOvM";
-    static int pageCount = 2;
+    static int pageCount = 2;                                        //To decide how many pages of the Search function to access to get videos.
+    static filterMode currentFilter = filterMode.UNIQUE_CHANNELS;
 }
 
+/**
+ * Class containing default values for the search functions.
+ */
 class defaultSearchValues
 {
     static int maxResults = 100;
@@ -141,8 +44,21 @@ class defaultSearchValues
     static String pubAfter = "1970-01-01T00:00:00Z";
 }
 
+/**
+ * Class to construct URLs with different parameters for accessing the YoutubeApi-v3.
+ */
 class ApiUrlCreator
 {
+    /**
+     * Creates a URL to Search-list function(YoutubeApi-v3).
+     * @param maxResults the maximum number of items that should be returned in the result set. Acceptable values are 0 to 50, inclusive
+     * @param order the method that will be used to order resources in the API response. The default value is relevance. Values -> [date, rating, relevance, title, videoCount, viewCount]
+     * @param pubAfter indicates that the API response should only contain resources created at or after the specified time. RFC 3339 format.
+     * @param q specifies the query term to search for.
+     * @param relevanceLanguage instructs the API to return search results that are most relevant to the specified language. The parameter value is typically an ISO 639-1 two-letter language code.
+     * @param type restricts a search query to only retrieve a particular type of resource. Values -> [channel, playlist, video]
+     * @return URL to Search-list function(YoutubeApi-v3) in string format.
+     */
     static String SearchApiFunctionUrl(int maxResults, String order, String pubAfter, String q, String relevanceLanguage, String type)
     {
         String baseUrl = "https://youtube.googleapis.com/youtube/v3/search?part=" + "snippet" + "%2C" + "id";      //Only uses part Snippet & id
@@ -155,11 +71,22 @@ class ApiUrlCreator
         baseUrl += "&key=" + ConstValues.API_KEY;
         return baseUrl;
     }
+
+    /**
+     * Minimizes the verbose SearchUrlCreator by only asking for query and using default values from DefaultSearchValues class.
+     * @param q Specifies the query to search YouTube for.
+     * @return URL to Search-list function(YoutubeApi-v3) in string format.
+     */
     static String SearchApiFunctionUrl(String q)
     {
         return SearchApiFunctionUrl(defaultSearchValues.maxResults, defaultSearchValues.order, defaultSearchValues.pubAfter, q, defaultSearchValues.relevanceLanguage, defaultSearchValues.type);
     }
 
+    /**
+     * Creates a URL to Videos-list function(YoutubeApi-v3).
+     * @param id YouTube Video ID to call Videos function for.
+     * @return URL to Videos-list function(YoutubeApi-v3) in string format.
+     */
     static String VideoApiFunctionUrl(String id)
     {
         String baseUrl = "https://youtube.googleapis.com/youtube/v3/videos?part=" + "snippet" + "%2C" + "statistics";
@@ -168,6 +95,11 @@ class ApiUrlCreator
         return baseUrl;
     }
 
+    /**
+     * Creates a URL to a particular pageToken.
+     * @param pageToken pageToken value to create URL for.
+     * @return URL to a particular pageToken.
+     */
     static String getPageResponseUrl(String pageToken)
     {
         String baseUrl = "https://youtube.googleapis.com/youtube/v3/search?part=snippet%2Cid";
@@ -176,6 +108,11 @@ class ApiUrlCreator
         return baseUrl;
     }
 
+    /**
+     * Creates a URL to download a Thumbnail of YouTube video.
+     * @param videoId VideoId to download thumbnail of.
+     * @return URL to download a Thumbnail of YouTube video.
+     */
     static String getThumbnail(String videoId)
     {
         String baseUrl = "https://i.ytimg.com/vi/" + videoId + "/maxresdefault.jpg";
@@ -183,8 +120,16 @@ class ApiUrlCreator
     }
 }
 
+/**
+ *  Class to send API Request
+ */
 class SendApiRequest
 {
+    /**
+     * Takes a URL makes a GET request and returns its response in String format.
+     * @param url URL to send GET request to.
+     * @return Response the URL provides.
+     */
     static String sendGetRequest(String url) throws IOException, URISyntaxException     //Basic Function to send a URL Request.
     {
         URI u = new URI(url);
@@ -200,8 +145,16 @@ class SendApiRequest
     }
 }
 
+/**
+ * Class with functions to filter Lists of VideoData on pre-defined basis.
+ */
 class FilterLists
 {
+    /**
+     * Filters a VideoData list to only contain one video per Channel.
+     * @param videos List of VideoData objects to filter.
+     * @return Returns the same list with only unique channels.
+     */
     public static List<VideoData> filterUniqueChannels(List<VideoData> videos)
     {
         Set<String> channelIds = new HashSet<>();
@@ -222,8 +175,17 @@ class FilterLists
     }
 }
 
+/**
+ * Static Class to convert raw JSON reponses to java objects.
+ * @author slash
+ */
 class JSONResponseParser
 {
+    /**
+     *
+     * @param jsonString raw jsonResponse of Search function(YoutubeApi-v3) in String.
+     * @return List of VideoData objects with incomplete data(id, title, channelId, channelTitle, publishedAt, publishedAt).
+     */
     static List<VideoData> parseSearchResponsePage(String jsonString)       //Extracts data from the response of the Search Function
     {
         List<VideoData> videos = new ArrayList<>();
@@ -250,31 +212,24 @@ class JSONResponseParser
         return videos;
     }
 
-    static VideoData parseVideoResponse(String jsonString)
+    /**
+     * Takes the response of YouTube video function uses it to return a new VideoData object entirely.
+     * @param jsonString raw JSON response of Video(YoutubeApi-v3) function.
+     * @return New VideoData object with data parsed from Video function JSON response.
+     */
+    static VideoData parseVideoResponse(String jsonString)  //Overloaded
     {
         VideoData video = new VideoData();
-
-        JSONObject response = new JSONObject(jsonString);
-        JSONArray items = response.getJSONArray("items");
-        JSONObject videoObj = items.getJSONObject(0);
-        JSONObject snippet = videoObj.getJSONObject("snippet");
-        JSONObject stats = videoObj.getJSONObject("statistics");
-
-        video.videoId = videoObj.getString("id");
-        video.videoTitle = snippet.getString("title");
-        video.channel.channelId = snippet.getString("channelId");
-        video.channel.channelName = snippet.getString("channelTitle");
-        video.publishedAt = snippet.getString("publishedAt");
-        video.description = snippet.getString("description");
-        video.audioLanguage = snippet.getString("defaultAudioLanguage");
-        video.likeCount = stats.getInt("likeCount");
-        video.viewCount = stats.getInt("viewCount");
-        video.commentCount = stats.getInt("commentCount");
-
+        parseToVideoData(video, jsonString);
         return video;
     }
 
-    static void parseToVideoData(VideoData video, String jsonString)
+    /**
+     * Takes the response of YouTube video function uses it to populate a VideoData object entirely.
+     * @param video any VideoData Object
+     * @param jsonString raw JSON response of Video function(YoutubeApi-v3)
+     */
+    static void parseToVideoData(VideoData video, String jsonString)       //VIDEO Method response Parsed to a VideoData Object
     {
         JSONObject response = new JSONObject(jsonString);
         JSONArray items = response.getJSONArray("items");
@@ -295,8 +250,13 @@ class JSONResponseParser
         video.commentCount = stats.getInt("commentCount");
     }
 
+    /**
+     * Creates a partially initialized VideoData object(initialized by parseSearchResponse(Only incomplete info from Search Function(YoutubeApi-v3)))
+     * @param vidObject a JSONObject of the video from the Search Response JSONArray items.
+     * @return new incomplete VideoData object
+     */
     //WARNING : DOES NOT INITIALIZE VIDEODATA ENTIRELY, Used as an Early Step for FILTERING LIST.DO NOT USE ANYWHERE ELSE
-    private static VideoData parseVideoObjectOfSearch(JSONObject vidObject)         //Creates a Incomplete VideoData Object, Extracts Data from a Video Object to VideoData OBject
+    private static VideoData parseVideoObjectOfSearch(JSONObject vidObject)         //Creates an Incomplete VideoData Object, Extracts Data from a (Video Object of Search Response) to VideoData Object
     {
         VideoData vRet = new VideoData();
 
@@ -332,15 +292,28 @@ class JSONResponseParser
     }
 }
 
+/**
+ * Class to be directly accessed outside to work with YoutubeApiClient
+ */
 public class YoutubeApiClient
 {
+    /**
+     *
+     * @param query Query to search YouTube for.
+     * @return Filtered List of VideoData objects fully initialized.(Filter changed by class ConstValues.)
+     */
     //1. Get Response 2. Parse to Incomplete video objects 3. Filter Duplicate channels 4. Complete the objects
     public static List<VideoData> search(String query) throws IOException, URISyntaxException
     {
         String searchUrl = ApiUrlCreator.SearchApiFunctionUrl(query);
         String response = SendApiRequest.sendGetRequest(searchUrl);
         List<VideoData> videos = JSONResponseParser.parseSearchResponsePage(response);      //List of incomplete videodatas
-        FilterLists.filterUniqueChannels(videos);       //Remove Videos with dupplicate channels
+
+        switch (ConstValues.currentFilter)
+        {
+            case UNIQUE_CHANNELS ->  FilterLists.filterUniqueChannels(videos);       //Remove Videos with duplicate channels
+        }
+
         for (VideoData v : videos)      //Complete VideoData Objects with full info
         {
             completeVideoData(v);
@@ -348,6 +321,10 @@ public class YoutubeApiClient
         return videos;
     }
 
+    /**
+     * Completes a partially initialized VideoObject from Search response(YouTubeApi-v3).
+     * @param v VideoObject reference of partial VideoData object.
+     */
     private static void completeVideoData(VideoData v) throws IOException, URISyntaxException
     {
         String videoUrl = ApiUrlCreator.VideoApiFunctionUrl(v.videoId);

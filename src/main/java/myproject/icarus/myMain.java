@@ -16,12 +16,6 @@ public class myMain
 {
     public static void main(String[] args) throws IOException, URISyntaxException
     {
-        System.out.println(ApiUrlCreator.VideoApiFunctionUrl("RD2E4aaIvrU7Q"));
-        List<VideoData> l = YoutubeApiClient.search("Derke");
-        for (VideoData v : l)
-        {
-            System.out.println(v);
-            System.out.println();
-        }
+
     }
 }
