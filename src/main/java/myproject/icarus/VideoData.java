@@ -17,7 +17,7 @@ public class VideoData
     int likeCount;
     int viewCount;
     int commentCount;
-    List<Comment> Comments;
+    List<CommentData> comments;
 
     /**
      * Initializes the object with invalid values.

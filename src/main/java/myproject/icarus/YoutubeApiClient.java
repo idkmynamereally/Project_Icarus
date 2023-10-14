@@ -43,6 +43,14 @@ class defaultSearchValues
     static String pubAfter = "1970-01-01T00:00:00Z";
 }
 
+class commentDefaultValues
+{
+    static int maxResults = 100;
+    static String moderationStatus = "published";
+    static String order = "time";
+    static String textFormat = "plainText";
+}
+
 /**
  * Class to construct URLs with different parameters for accessing the YoutubeApi-v3.
  */
@@ -72,7 +80,7 @@ class ApiUrlCreator
     }
 
     /**
-     * Minimizes the verbose SearchUrlCreator by only asking for query and using default values from DefaultSearchValues class.
+     * Minimizes the multi argument SearchApiFunctionUrl by only asking for query and using default values from DefaultSearchValues class.
      * @param q Specifies the query to search YouTube for.
      * @return URL to Search-list function(YoutubeApi-v3) in string format.
      */
@@ -82,7 +90,7 @@ class ApiUrlCreator
     }
 
     /**
-     * Creates a URL to Videos-list function(YoutubeApi-v3).
+     * Creates a URL to Videos-list function(YouTubeApi-v3).
      * @param id YouTube Video ID to call Videos function for.
      * @return URL to Videos-list function(YoutubeApi-v3) in string format.
      */
@@ -92,6 +100,36 @@ class ApiUrlCreator
         baseUrl += "&id=" + id;
         baseUrl += "&key=" + ConstValues.API_KEY;
         return baseUrl;
+    }
+
+    /**
+     * Creates a URL to CommentThreads-list function(YouTubeApi-v3) to a particular VideoId
+     * @param maxResults self Explanatory cmon(Number of Comments to return. doesn't seem to go higher than 100)
+     * @param moderationStatus published/heldForReview/likelySpam/rejected
+     * @param order time/relevance
+     * @param textFormat plaintext/html
+     * @param videoId Videos for which to get the Comments.
+     * @return URL to get a CommentThreadListResponse.
+     */
+    static String commentThreadApiFunctionUrl(int maxResults, String moderationStatus, String order, String textFormat, String videoId)
+    {
+        String baseUrl = "https://youtube.googleapis.com/youtube/v3/commentThreads?part=" + "snippet" + "%2C" + "id";
+        baseUrl += "&maxResults=" + maxResults;
+        baseUrl += "&moderationStatus=" + moderationStatus;
+        baseUrl += "&order=" + order;
+        baseUrl += "&textFormat=" + textFormat;
+        baseUrl += "&videoId=" + videoId;
+        baseUrl += "&key=" + ConstValues.API_KEY;
+        return baseUrl;
+    }
+
+    /**
+     * Wrapper function to call the commentThreadApiFunctionUrl for a videoId with values from commentDefaultValues class
+     * @return URL to get a CommentThreadListResponse.
+     */
+    static String commentThreadApiFunctionUrl(String videoId)
+    {
+        return commentThreadApiFunctionUrl(commentDefaultValues.maxResults, commentDefaultValues.moderationStatus, commentDefaultValues.order, commentDefaultValues.textFormat, videoId);
     }
 
     /**
@@ -181,7 +219,7 @@ class FilterLists
 class JSONResponseParser
 {
     /**
-     *
+     * Initializes a List of VideoData objects with [incomplete]data returned from Search function (YouTubeApi-v3).
      * @param jsonString raw jsonResponse of Search function(YoutubeApi-v3) in String.
      * @return List of VideoData objects with incomplete data(id, title, channelId, channelTitle, publishedAt, publishedAt).
      */
@@ -212,6 +250,54 @@ class JSONResponseParser
     }
 
     /**
+     * Takes response to a CommentThreadList Function and returns a list of CommentData objects.
+     * @param jsonString JSON response created by the CommentThreadResponse-List
+     * @return List of CommentData objects
+     */
+    static List<CommentData> parseCommentThreadResponse(String jsonString)
+    {
+        List<CommentData> comments = new ArrayList<>();
+        JSONObject responseObject = new JSONObject(jsonString);
+        JSONObject pageInfo = responseObject.getJSONObject("pageInfo");
+        JSONArray items = responseObject.getJSONArray("items");
+
+        String nextPageToken = "null";
+        if (responseObject.has("nextPageToken"))
+            nextPageToken = responseObject.getString("nextPageToken");
+        int totalResults = pageInfo.getInt("totalResults");
+
+        JSONObject item;
+        for (int i = 0; i < totalResults; i++)
+        {
+            item = items.getJSONObject(i);
+            comments.add(parseCommentItem(item));
+        }
+        return comments;
+    }
+
+    /**
+     * Used to parse individual JSONObject in the JSON Array items in the response.
+     * @param item item in an items array in the CommentThreadResponse-List
+     * @return CommentData object fully initialized.
+     */
+    static CommentData parseCommentItem(JSONObject item)
+    {
+        CommentData comment = new CommentData();
+        JSONObject snippet = item.getJSONObject("snippet");
+        JSONObject topLevelComment = snippet.getJSONObject("topLevelComment");
+        JSONObject topSnippet = topLevelComment.getJSONObject("snippet");
+
+        comment.commentId = item.getString("id");
+        comment.authorName = topSnippet.getString("authorDisplayName");
+        comment.channelId = topSnippet.getString("channelId");
+        comment.textOriginal = topSnippet.getString("textOriginal");
+        comment.publishedAt = topSnippet.getString("publishedAt");
+        comment.likeCount = topSnippet.getInt("likeCount");
+
+        return comment;
+    }
+
+    /**
      * Takes the response of YouTube video function uses it to return a new VideoData object entirely.
      * @param jsonString raw JSON response of Video(YoutubeApi-v3) function.
      * @return New VideoData object with data parsed from Video function JSON response.
@@ -236,17 +322,26 @@ class JSONResponseParser
         JSONObject snippet = videoObj.getJSONObject("snippet");
         JSONObject stats = videoObj.getJSONObject("statistics");
 
-        video.videoId = videoObj.getString("id");
-        video.videoTitle = snippet.getString("title");
-        video.channel.channelId = snippet.getString("channelId");
-        video.channel.channelName = snippet.getString("channelTitle");
-        video.publishedAt = snippet.getString("publishedAt");
-        video.description = snippet.getString("description");
+        if (snippet.has("id"))
+            video.videoId = videoObj.getString("id");
+        if (snippet.has("title"))
+            video.videoTitle = snippet.getString("title");
+        if (snippet.has("channelId"))
+            video.channel.channelId = snippet.getString("channelId");
+        if (snippet.has("channelTitle"))
+            video.channel.channelName = snippet.getString("channelTitle");
+        if (snippet.has("publishedAt"))
+            video.publishedAt = snippet.getString("publishedAt");
+        if (snippet.has("description"))
+            video.description = snippet.getString("description");
         if (snippet.has("defaultAudioLanguage"))
             video.audioLanguage = snippet.getString("defaultAudioLanguage");
-        video.likeCount = stats.getInt("likeCount");
-        video.viewCount = stats.getInt("viewCount");
-        video.commentCount = stats.getInt("commentCount");
+        if (snippet.has("likeCount"))
+            video.likeCount = stats.getInt("likeCount");
+        if (snippet.has("viewCount"))
+            video.viewCount = stats.getInt("viewCount");
+        if (snippet.has("commentCount"))
+            video.commentCount = stats.getInt("commentCount");
     }
 
     /**
@@ -328,6 +423,11 @@ public class YoutubeApiClient
     {
         String videoUrl = ApiUrlCreator.VideoApiFunctionUrl(v.videoId);
         String videoResponse = SendApiRequest.sendGetRequest(videoUrl);
+
+        String commentsUrl = ApiUrlCreator.commentThreadApiFunctionUrl(v.videoId);
+        String commentResponse = SendApiRequest.sendGetRequest(commentsUrl);
+
+        v.comments = JSONResponseParser.parseCommentThreadResponse(commentResponse);
         JSONResponseParser.parseToVideoData(v, videoResponse);
     }
 }

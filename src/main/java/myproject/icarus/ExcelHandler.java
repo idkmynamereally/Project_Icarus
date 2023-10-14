@@ -96,15 +96,15 @@ public class ExcelHandler
         }
     }
 
-    public static void inputCommentToExcelSheet(XSSFSheet sheet, Comment comment)
+    public static void inputCommentToExcelSheet(XSSFSheet sheet, CommentData commentData)
     {
         int rowNum = sheet.getLastRowNum()+1;
         XSSFRow row = sheet.createRow(rowNum);
         CellStyle regularCellStyle = new CellStyleOptions(sheet.getWorkbook()).regularCell;
 
-        row.createCell(0).setCellValue(comment.textDisplay);
-        row.createCell(1).setCellValue(comment.authorName);
-        row.createCell(2).setCellValue(comment.likeCount);
+        row.createCell(0).setCellValue(commentData.textOriginal);
+        row.createCell(1).setCellValue(commentData.authorName);
+        row.createCell(2).setCellValue(commentData.likeCount);
 
         for (int i = 0; i < ExcelConstValues.commentCols.length; i++)
         {

@@ -16,6 +16,8 @@ public class myMain
 {
     public static void main(String[] args) throws IOException, URISyntaxException
     {
-
+        String searchTerm = "Pewdiepie";
+        List<VideoData> l = YoutubeApiClient.search(searchTerm);
+        CSVHandler.videosToCSVFile(searchTerm, l);
     }
 }
