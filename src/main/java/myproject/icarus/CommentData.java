@@ -1,5 +1,8 @@
 package myproject.icarus;
 
+/**
+ * Class to store data of a YouTube comment.
+ */
 public class CommentData
 {
     String commentId;

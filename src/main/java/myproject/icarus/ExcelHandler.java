@@ -39,6 +39,10 @@ class CellStyleOptions
     CellStyle columnHeader;
     CellStyle regularCell;
 }
+
+/**
+ * Originally meant to output data to a Excel file currently not in use. Likely to merge into OutputHandler.
+ */
 public class ExcelHandler
 {
     public static XSSFSheet initExcelSheetForVideoData(XSSFWorkbook workbook)

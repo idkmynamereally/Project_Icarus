@@ -1,5 +1,6 @@
 package myproject.icarus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,6 +35,7 @@ public class VideoData
         viewCount = -1;
         commentCount = -1;
         channel = new Channel();
+        comments = new ArrayList<CommentData>();
     }
 
     /**
