@@ -11,8 +11,8 @@ import java.util.List;
  */
 class constValues
 {
-    //static final String API_KEY = "AIzaSyCG9m-cT3ugYXbx_TsPkJNfEnFH1GaaOvM";      //First Account
-    static final String API_KEY = "AIzaSyDaybESiycR4Oh_O_FztGbeKulO5WFlrFs";        //Second Account
+    //static final String API_KEY = "";      //First Account
+    static final String API_KEY = "";        //Second Account
 }
 
 /**
